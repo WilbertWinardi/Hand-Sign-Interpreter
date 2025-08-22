@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block title %}Collect Data{% endblock %}
+{% block content %}
+<h2 class="mb-4">Collect Gesture Data</h2>
+<p>Enter the name of a new gesture or an existing one to add more data.</p>
+<form method="POST">
+    <div class="mb-3">
+        <label for="gesture_name" class="form-label">Gesture Name (e.g., 'a', 'ok')</label>
+        <input type="text" class="form-control" id="gesture_name" name="gesture_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="num_examples" class="form-label">Number of Examples to Collect</label>
+        <input type="number" class="form-control" id="num_examples" name="num_examples" value="30">
+    </div>
+    <button type="submit" class="btn btn-primary">Start Collection</button>
+</form>
+{% if error %}
+<div class="alert alert-danger mt-3">{{ error }}</div>
+{% endif %}
+{% endblock %}

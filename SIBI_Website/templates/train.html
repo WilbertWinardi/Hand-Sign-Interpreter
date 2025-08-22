@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+{% block title %}Train Model{% endblock %}
+{% block content %}
+<h2 class="mb-4">Train AI Model</h2>
+<p>Click the button below to start the training process. This may take several minutes. The console output will be streamed below.</p>
+<button id="trainButton" class="btn btn-success">Start Training</button>
+<div id="log" class="log-container mt-3">Waiting for training to start...</div>
+
+<script>
+    const trainButton = document.getElementById('trainButton');
+    const logContainer = document.getElementById('log');
+
+    trainButton.addEventListener('click', () => {
+        trainButton.disabled = true;
+        trainButton.textContent = "Training in Progress...";
+        logContainer.innerHTML = 'Initializing...\n';
+
+        const eventSource = new EventSource("{{ url_for('run_training') }}");
+
+        eventSource.onmessage = function(event) {
+            logContainer.innerHTML += event.data + '\n';
+            logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll
+        };
+
+        eventSource.onerror = function(event) {
+            logContainer.innerHTML += '--- Connection closed. ---';
+            eventSource.close();
+            trainButton.disabled = false;
+            trainButton.textContent = "Start Training";
+        };
+    });
+</script>
+{% endblock %}

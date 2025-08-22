@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+{% block title %}Collecting {{ gesture_name.upper() }}{% endblock %}
+{% block content %}
+<div class="text-center">
+    <h2>Collecting Data for: <span class="text-danger">{{ gesture_name.upper() }}</span></h2>
+    <p>Press the "Save Example" button <span class="fw-bold">{{ num_examples }}</span> times.</p>
+    <div class="video-container my-3">
+        <img src="{{ url_for('video_feed_collect') }}" width="640" height="480">
+    </div>
+    <h4 id="counter">Examples collected: 0 / {{ num_examples }}</h4>
+    <button id="saveButton" class="btn btn-success btn-lg">Save Example</button>
+</div>
+
+<script>
+    let examplesCollected = 0;
+    let totalExamples = {{ num_examples }};
+    let startNum = {{ start_num }};
+    const gestureName = "{{ gesture_name }}";
+    const counter = document.getElementById('counter');
+    const saveButton = document.getElementById('saveButton');
+
+    saveButton.addEventListener('click', async () => {
+        if (examplesCollected >= totalExamples) {
+            alert("Collection complete!");
+            return;
+        }
+
+        const currentExampleNum = startNum + examplesCollected;
+        
+        // Disable button to prevent spam
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+        
+        try {
+            // Call the save endpoint
+            const response = await fetch(`/save_data/${gestureName}/${currentExampleNum}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                examplesCollected++;
+                counter.textContent = `Examples collected: ${examplesCollected} / ${totalExamples}`;
+                console.log(result.message);
+                if (examplesCollected >= totalExamples) {
+                    counter.textContent = "Collection Complete!";
+                    saveButton.textContent = "Done!";
+                    saveButton.classList.remove('btn-success');
+                    saveButton.classList.add('btn-secondary');
+                    alert("Collection complete! You can now navigate away.");
+                } else {
+                    saveButton.textContent = 'Save Example';
+                }
+            } else {
+                alert("Failed to save data. See console for details.");
+                saveButton.textContent = 'Save Example';
+            }
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("An error occurred. Check the console.");
+            saveButton.textContent = 'Save Example';
+        } finally {
+            // Re-enable button if not complete
+            if (examplesCollected < totalExamples) {
+                 saveButton.disabled = false;
+            }
+        }
+    });
+</script>
+{% endblock %}

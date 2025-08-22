@@ -1,0 +1,83 @@
+{% extends 'layout.html' %}
+{% block title %}Live Detection{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-center">Live SIBI Detection & Sentence Builder</h2>
+<div class="row">
+    <div class="col-md-8">
+        <div class="video-container">
+            <img src="{{ url_for('video_feed_detect') }}" width="100%">
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header fw-bold">
+                Sentence Builder
+            </div>
+            <div class="card-body">
+                <p class="card-text">Form words by adding the detected letters.</p>
+                <div id="sentence-display" class="alert alert-secondary text-center fs-4" style="min-height: 60px; word-break: break-all;">
+                    &nbsp; </div>
+                
+                <div class="d-grid gap-2">
+                    <button id="add-btn" class="btn btn-primary">Add Letter</button>
+                    <button id="delete-btn" class="btn btn-warning">Delete Last Letter</button>
+                    <button id="clear-btn" class="btn btn-danger">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const addBtn = document.getElementById('add-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const sentenceDisplay = document.getElementById('sentence-display');
+
+    // Function to update the sentence display
+    function updateSentence(newSentence) {
+        if (newSentence === "") {
+            // Use a non-breaking space to maintain element height
+            sentenceDisplay.innerHTML = '&nbsp;';
+        } else {
+            sentenceDisplay.textContent = newSentence.toUpperCase();
+        }
+    }
+
+    // Event listener for the "Add Letter" button
+    addBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch("{{ url_for('add_letter') }}", { method: 'POST' });
+            const data = await response.json();
+            updateSentence(data.sentence);
+        } catch (error) {
+            console.error('Error adding letter:', error);
+        }
+    });
+
+    // Event listener for the "Delete Last Letter" button
+    deleteBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch("{{ url_for('delete_letter') }}", { method: 'POST' });
+            const data = await response.json();
+            updateSentence(data.sentence);
+        } catch (error) {
+            console.error('Error deleting letter:', error);
+        }
+    });
+
+    // Event listener for the "Clear All" button
+    clearBtn.addEventListener('click', async () => {
+        if (confirm("Are you sure you want to clear the entire sentence?")) {
+            try {
+                const response = await fetch("{{ url_for('clear_sentence') }}", { method: 'POST' });
+                const data = await response.json();
+                updateSentence(data.sentence);
+            } catch (error) {
+                console.error('Error clearing sentence:', error);
+            }
+        }
+    });
+</script>
+{% endblock %}  
